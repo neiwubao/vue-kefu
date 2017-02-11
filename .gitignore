@@ -2,3 +2,5 @@
 dist/build.js
 
 dist/build.js.map
+
+node_modules
