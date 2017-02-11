@@ -1,9 +1,9 @@
 
-dist/build.js
+store-client/dist/build.js
 
-dist/build.js.map
+store-client/dist/build.js.map
 
-node_modules
+store-client/node_modules
 
 user-client/dist/build.js
 
