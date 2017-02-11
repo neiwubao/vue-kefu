@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>客服中心</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        *:before, *:after {
+            box-sizing: inherit;
+        }
+        body, html {
+            height: 100%;
+            overflow: hidden;
+        }
+        body, ul {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            color: #4d4d4d;
+            font: 14px/1.4em 'Helvetica Neue', Helvetica, 'Microsoft Yahei', Arial, sans-serif;
+            background: #f5f5f5 url('dist/images/bg.jpg') no-repeat center;
+            background-size: cover;
+            font-smoothing: antialiased;
+        }
+        ul {
+            list-style: none;
+        }
+    </style>
+    <script type="text/javascript">
+        function setCookie(name,value)
+        {
+            var Days = 30;
+            var exp = new Date();
+            exp.setTime(exp.getTime() + Days*24*60*60*1000);
+            document.cookie = name + "="+ escape (value) + ";expires=" + exp.toGMTString();
+            console.log(name+'---'+value);
+        }
+    </script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <app></app>
+    <script src="dist/build.js"></script>
+  </body>
+</html>

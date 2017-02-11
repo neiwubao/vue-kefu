@@ -4,3 +4,9 @@ dist/build.js
 dist/build.js.map
 
 node_modules
+
+user-client/dist/build.js
+
+user-client/dist/build.js.map
+
+user-client/node_modules
