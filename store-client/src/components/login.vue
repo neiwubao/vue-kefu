@@ -12,7 +12,7 @@ export default {
             username: '',
             password: '',
             notice:'',
-            apiUrl:'https://api.1taocheng.cn/?service=Store.Login'
+            apiUrl:'http://www.ydc0755.com/index.php/Admin/api/login'
         };
     },
     methods: {
@@ -22,11 +22,13 @@ export default {
                 this.notice = '用户名密码不能为空';
                 return true;
             }
-            this.$http.jsonp(this.apiUrl+'&username='+this.username+'&password='+this.password).then(response => {
-                if(response.body.ret==200){
-                    this.notice = response.body.data.ru_id;
-                    this.setLogin(response.body.data.ru_id);
-                    this.$socket.emit('storeLogin', {store:response.body.data.ru_id, username:'厂家'});
+            this.$http.get(this.apiUrl+'&username='+this.username+'&password='+this.password).then(response => {
+                console.log(response.body);
+                if(response.body.status==1){
+                    this.notice = '登录成功';
+                    console.log('手动执行登录--->'+response.body.result.id);
+                    this.$socket.emit('adminLogin', {adminid:response.body.result.id, adminname:response.body.result.user_name});
+                    this.setLogin(response.body.result.id);
                 }else{
                     this.notice = response.body.msg;
                 }
@@ -40,13 +42,13 @@ export default {
 <template>
 <div class="loginbox">
     <div class="text-center">
-        <img src="http://www.1taocheng.cn/themes/myds/images/logo.png">
-        <p>客服系统 * 商家后台</p>
+        <img src="http://www.ydc0755.com/public/upload/logo/2017/07-26/f75b537f25b9491c376d637f33e482bf.png">
+        <p>客服系统0.9.10.2</p>
         <br>
     </div>
 	<div class="input-group input-group-lg">
 	  <span class="input-group-addon" id="basic-addon1">用户名</span>
-	  <input type="text" class="form-control" placeholder="请输入用户名"  v-model="username" aria-describedby="basic-addon1">
+	  <input type="text" class="form-control" placeholder="请输入用户名f"  v-model="username" aria-describedby="basic-addon1">
 	</div>
 	<div class="input-group input-group-lg">
 	  <span class="input-group-addon" id="basic-addon1">密&nbsp;&nbsp;&nbsp;码</span>
@@ -64,8 +66,9 @@ export default {
 	position: relative;
     box-sizing: border-box;
     border-radius: 5px;
-    margin: 30% auto;
+    margin: 10% auto;
     background-color: #fff;
+    padding: 10px;
     width: 360px;
     .input-group{
     	margin-bottom:5px;

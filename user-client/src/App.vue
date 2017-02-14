@@ -9,115 +9,101 @@ import Message from 'components/message';
 export default {
     components: { Card, List, Text, Message },
     vuex: {
-        actions: actions
+        actions: actions,
+        getters: {
+            loginUser: ({ userSessionId }) => userSessionId
+        }
     },
     data () {
         return {
             storeid: 0,
-            userid:0
+            userid:0,
+            apiUrl:'http://www.ydc0755.com/Home/Api/kfinfo',
+            logo:'',nickname:''
         };
     },
     created () {
-        let talk_name = '';
+        let token = '';
         let user_id = '0';
         let cookie = document.cookie.split(";");
         for(var k in cookie){
             var item = cookie[k].split("=");
             var key = item[0];
             key = key.replace(/(^\s*)|(\s*$)/g, "");
-            if(key == 'talk_name'){
-               //var talk_name = item[1];
-               console.log(item[1]);
-            }
             if(key == 'user_id'){
                user_id = item[1];
+            }
+            if(key == 'token'){
+               token = item[1];
             }
         }
         if (user_id) {
             this.userid = user_id;
-            this.$socket.emit('userLogin', {userid:user_id, username:talk_name});
+            this.token = token;
+            this.$http.get(this.apiUrl+'&token='+token+'&user_id='+user_id).then(response => {
+                console.log(response.body);
+                this.nickname = response.body.nickname;
+                this.logo = response.body.logo;
+                this.$socket.emit('guestLogin', {guestid:'user_'+user_id, username:response.body.nickname, logo:response.body.logo});
+            }, response => {
+                let notice = response.status ? '请求状态'+response.status : '';
+                console.log(notice);
+            });
         }else{
             console.log('用户未找到');
         }
-        var re = /store_id=([^\/]+)\&/;
-        var re2 = /store_id=([^\/]+)/;
-        if (re.test(window.location.search) || re2.test(window.location.search)) {
-            let storeid = RegExp.$1;
-            this.storeid = storeid;
-        }else{
-            console.log('厂家未找到');
-        }
     },
     sockets:{
-        userLogin: function(data){
-            //console.log(data);
-            let storelist = data.stores
-            let in_store = storelist.find(item => item.from == this.storeid);
-            if(in_store){
-
-            }else{
-                storelist.push({
-                    from:this.storeid,
-                    name:'厂家'
-                });
-            }
-            let userinfo = {
-                name:data.name,
-                img:data.img,
-                userid:this.userid
-            }
-            this.initData(userinfo,storelist,this.storeid);
-            //console.log(storelist);
-            for(var k in storelist){
-                this.$socket.emit('lastMessage', {
-                    from:'user',
-                    store:storelist[k].from,
-                    userid:'user_'+this.userid
-                })
-                this.$socket.emit('listMessage', {
-                    store:storelist[k].from, 
-                    page:1,
-                    from:'user',
-                    userid:'user_'+this.userid
-                });
-            }
+        guestLogin: function(data){
+            if(this.loginUser) return true;
+            console.log(data);
+            var userinfo = {
+              id:this.userid,
+              name:this.nickname,
+              img:this.logo
+            };
+            this.initData(userinfo);
+            this.$socket.emit('listGuestMessage', {
+                adminid:1,
+                page:1,
+                from:'user',
+                guestid:'user_'+this.userid
+            });
         },
-        lastMessage: function(data){
-            //console.log(data);
-            data.time = new Date(Date.parse(data.time));
-            this.setStore(data);
-        },
-        storeMessage: function(data){
-            //console.log(data);
+        adminMessage: function(data){
+            console.log(data);
             data.self = false;
             data.date = new Date(Date.parse(data.time));
             this.getMessage(data);
-            //console.log(data.store);
-            this.$socket.emit('lastMessage', {
-                from:'user',
-                store:data.store,
-                userid:'user_'+this.userid
-            })
         },
-        listMessage: function(data){
-            //console.log(data);
+        listGuestMessage: function(data){
+            console.log('接收聊天记录');
+            console.log(data);
             let messagelist = data.result;
             let msg = new Object;
             msg.store = data.store;
-            for(var i=messagelist.length-1;i>=0;i--){  
+            for(var i=messagelist.length-1;i>=0;i--){
                 var json = JSON.parse(messagelist[i]);
                 msg.content = json.content;
                 msg.user = data.user;
                 msg.date = new Date(Date.parse(json.time));
-                msg.self = json.type == 'user' ? true : false;
+                msg.self = json.type == 'guest' ? true : false;
+                if(json.file == 'pic'){
+                  msg.type = 'img';
+                }else if(json.file == 'pro'){
+                  msg.type = 'pro';
+                }else{
+                  msg.type = 'text';
+                }
                 this.getMessage(msg);
             }
         },
         userFile: function(data){
             console.log('发送了图片');
         },
-        storePic: function(data){
+        adminPic: function(data){
             console.log('收到了图片');
+            console.log(data);
             data.self = false;
             data.date = new Date(data.time);
             data.type = 'img';

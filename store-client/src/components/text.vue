@@ -6,7 +6,7 @@ export default {
         actions: actions,
         getters: {
             currentId: ({ currentSessionId }) => currentSessionId,
-            storeId: ({ storeSessionId }) => storeSessionId
+            adminId: ({ storeSessionId }) => storeSessionId
         }
     },
     data () {
@@ -18,10 +18,10 @@ export default {
         onKeyup (e) {
             if (e.ctrlKey && e.keyCode === 13 && this.content.length) {
                 this.sendMessage(this.content);
-                this.$socket.emit('storeMessage', {
-                    userid:this.currentId, 
+                this.$socket.emit('adminMessage', {
+                    userid:this.currentId,
                     content:this.content,
-                    store:this.storeId, 
+                    adminid:this.adminId,
                 });
                 this.content = '';
             }
@@ -29,10 +29,10 @@ export default {
         send () {
             if(this.content){
                 this.sendMessage(this.content);
-                this.$socket.emit('storeMessage', {
-                    userid:this.currentId, 
+                this.$socket.emit('adminMessage', {
+                    userid:this.currentId,
                     content:this.content,
-                    store:this.storeId
+                    adminid:this.adminId
                 });
                 this.content = '';
             }else{
@@ -51,10 +51,10 @@ export default {
                 reader.onloadend = function (e) {
                     newthis.sendMessage(reader.result,'img');
                     document.getElementById('file').value = '';
-                    newthis.$socket.emit('storeFile', {
-                        userid:newthis.currentId,
+                    newthis.$socket.emit('adminFile', {
+                        guestid:newthis.currentId,
                         content:reader.result,
-                        store:newthis.storeId,
+                        adminid:newthis.adminId,
                         type:'img'
                     });
                 }

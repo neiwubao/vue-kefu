@@ -6,12 +6,16 @@ import App from './App';
 import store from './store';
 
 import VueSocketio from 'vue-socket.io';
-Vue.use(VueSocketio, 'http://120.76.246.92:3000'); 
+Vue.use(VueSocketio, 'http://121.201.2.70:3000');
 
 import VueRouter from 'vue-router';
 Vue.use(VueRouter);
 
+var VueResource = require('vue-resource');
 
+Vue.use(VueResource);
+Vue.http.options.emulateJSON = true;
+Vue.http.options.emulateHTTP = true;
 
 Vue.config.devtools = true;
 

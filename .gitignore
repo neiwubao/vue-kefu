@@ -10,3 +10,5 @@ user-client/dist/build.js
 user-client/dist/build.js.map
 
 user-client/node_modules
+
+.ftpconfig

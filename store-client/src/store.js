@@ -22,23 +22,15 @@ const store = new Vuex.Store({
         currentSessionId: '',
         // 过滤出只包含这个key的会话
         filterKey: '',
-        loginIf:'',
+        loginIf:false,
+        currentLength:true,
         deleteSessionId:''
     },
     mutations: {
         SET_LOGIN (state,ru_id) {
             console.log(ru_id);
-            state.loginIf = true;
             state.storeSessionId = ru_id;
-            sessionStorage.setItem('storeSessionId',compileStr(ru_id));
-
-            function compileStr(code){ //对字符串进行加密         
-            var c=String.fromCharCode(code.charCodeAt(0)+code.length);  
-            for(var i=1;i<code.length;i++)  
-            {        
-              c+=String.fromCharCode(code.charCodeAt(i)+code.charCodeAt(i-1));  
-            }     
-             return escape(c);   }
+            sessionStorage.setItem('storeSessionId',ru_id);
         },
         INIT_DATA (state,userlist,mystore) {
             state.loginIf = true;
@@ -47,7 +39,7 @@ const store = new Vuex.Store({
                 img:mystore.logo
             }
             state.storeSessionId = mystore.id;
-            console.log(mystore);
+            console.log('初始化数据')
             for(var k in userlist){
                 if(k==0){
                     state.currentSessionId = userlist[k].from;
@@ -58,11 +50,16 @@ const store = new Vuex.Store({
                         name:userlist[k].name,
                         img:'dist/images/2.png',
                         content:'',
-                        time:''
+                        time:'',
+                        icon:'remove',
+                        num:0
                     },
                     messages:[]
                 });
 
+            }
+            if(userlist.length){
+                state.currentLength = false;
             }
         },
         // 发送消息
@@ -81,11 +78,12 @@ const store = new Vuex.Store({
                     self: true
                 });
             }
+            session.user.time = new Date();
+            session.user.content = content;
         },
 
         //接收消息
         GET_MESSAGE ({ sessions }, message) {
-            //console.log(getmessage);
             let session = sessions.find(item => item.id == message.user);
             if(session){
                 if(message.type == 'img'){
@@ -93,60 +91,111 @@ const store = new Vuex.Store({
                         img: message.content,
                         date: message.date,
                         self: message.self
-                    }); 
+                    });
+                }else if(message.type == 'pro'){
+                    session.messages.push({
+                        id: message.content.id,
+                        name: message.content.name,
+                        pic: 'http://www.ydc0755.com'+message.content.pic,
+                        price: message.content.price,
+                        date: message.date,
+                        self: message.self
+                    });
                 }else{
                     session.messages.push({
                         content: message.content,
                         date: message.date,
                         self: message.self
-                    });                
+                    });
                 }
-            }else{
-                sessions.push({
-                    id:message.user,
-                    user:{
-                        name:'',
-                        img:'dist/images/1.jpg',
-                    },
-                    messages:[
-                        {
-                            content: message.content,
-                            date: new Date(),
-                            self: message.self
-                        }
-                    ]
-                });
             }
         },
         // 选择会话
         SELECT_SESSION (state, id) {
             state.currentSessionId = id;
+            let session = state.sessions.find(item => item.id == id);
+            if(session){
+                session.user.icon = 'remove';
+                session.user.num = 0;
+            }
         },
         // 搜索
         SET_FILTER_KEY (state, value) {
             state.filterKey = value;
         },
         IF_DELETE_SESSION(state, id) {
-            console.log('shanchu'+id);
+            //console.log('shanchu'+id);
             state.deleteSessionId = id;
         },
         DELETE_SESSION(state, id) {
             state.sessions = state.sessions.filter(item => item.id != id);
             state.deleteSessionId = '';
         },
-        SET_USER(state, userinfo) {
+        NODEL_SESSION(state) {
+            state.deleteSessionId = '';
+        },
+        UPDATE_USER(state, userinfo){
             let session = state.sessions.find(item => item.id == userinfo.user);
             if(session){
-                session.user.name = userinfo.name;
+                if(userinfo.type == 'pro'){
+                  userinfo.content = '产品';
+                }
                 session.user.content = userinfo.content;
-                session.user.img = userinfo.logo;
-                session.user.time = userinfo.time;
+                session.user.time = userinfo.date;
+                session.user.icon = 'eye-open';
+                session.user.num = session.user.num + 1
+                console.log(session);
+            }
+        },
+        SET_USER(state, userinfo) {
+            if(state.sessions){
+                let session = state.sessions.find(item => item.id == userinfo.user);
+                if(session){
+                    session.user.name = userinfo.name;
+                    session.user.content = userinfo.content;
+                    session.user.img = userinfo.logo;
+                    session.user.time = userinfo.time;
+                    session.user.icon = 'remove2';
+                }else{
+                    console.log('--2--');
+                    state.sessions.push({
+                        id:userinfo.user,
+                        user:{
+                            name:userinfo.name,
+                            img:userinfo.logo,
+                            content:userinfo.content,
+                            time:userinfo.time
+                        },
+                        messages:[
+                            {
+                                content: userinfo.content,
+                                date: new Date(),
+                                self: false
+                            }
+                        ],
+                    });
+                    state.currentLength = false;
+                }
+            }else{
+                console.log('--3--');
+                state.sessions.push({
+                    id:userinfo.user,
+                    user:{
+                        name:userinfo.name,
+                        img:userinfo.logo,
+                        content:userinfo.content,
+                        time:userinfo.time
+                    },
+                    messages:[],
+                });
             }
         },
         STORE_LOGOUT(state, ru_id){
             console.log('退出');
             state.loginIf = false;
-            sessionStorage.setItem('storeSessionId','');
+            sessionStorage.removeItem('storeSessionId');
+            sessionStorage.removeItem('rand');
+            state.storeSessionId = '';
             state.sessions = [];
         }
     }
@@ -170,9 +219,11 @@ export const actions = {
     getMessage: ({ dispatch }, message) => dispatch('GET_MESSAGE', message),
     selectSession: ({ dispatch }, id) => dispatch('SELECT_SESSION', id),
     deleteSession: ({ dispatch }, id) => dispatch('DELETE_SESSION', id),
+    nodelSession: ({ dispatch }) => dispatch('NODEL_SESSION'),
     ifdeleteSession: ({ dispatch }, id) => dispatch('IF_DELETE_SESSION', id),
     search: ({ dispatch }, value) => dispatch('SET_FILTER_KEY', value),
     setUser: ({ dispatch }, userinfo) => dispatch('SET_USER', userinfo),
+    updateUser: ({ dispatch }, userinfo) => dispatch('UPDATE_USER', userinfo),
     setLogin: ({ dispatch }, ru_id) => dispatch('SET_LOGIN', ru_id),
     logout: ({ dispatch }, ru_id) => dispatch('STORE_LOGOUT', ru_id),
 };

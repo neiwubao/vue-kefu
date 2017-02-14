@@ -4,7 +4,7 @@ import App from './App';
 import store from './store';
 
 import VueSocketio from 'vue-socket.io';
-Vue.use(VueSocketio, 'http://120.76.246.92:3000'); 
+Vue.use(VueSocketio, 'http://121.201.2.70:3000');
 
 var VueResource = require('vue-resource');
 

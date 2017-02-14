@@ -18,101 +18,86 @@ export default {
     },
     data () {
         return {
-            store: ''
+            store: '',
         };
     },
     created () {
         let storeSessionId = sessionStorage.getItem('storeSessionId');
-        this.store = uncompileStr(storeSessionId);
-        if(this.store && storeSessionId){
-            console.log(this.store);
-            this.$socket.emit('storeLogin', {store:this.store, username:'厂家'});
+        let rand = sessionStorage.getItem('rand');
+        this.adminid = storeSessionId;
+        if(this.adminid){
+            console.log('自动执行登录--->'+this.adminid);
+            this.$socket.emit('adminLogin', {adminid:this.adminid, adminname:'管理员',rand:rand});
         }else{
             console.log('请先登录');
         }
-        function uncompileStr(code){        
-         code=unescape(code);        
-         var c=String.fromCharCode(code.charCodeAt(0)-code.length);        
-         for(var i=1;i<code.length;i++)  
-         {        
-          c+=String.fromCharCode(code.charCodeAt(i)-c.charCodeAt(i-1));        
-         }        
-         return c;   } 
     },
     sockets:{
-        storeLogin: function(data){ 
-            console.log('执行了登录操作1');
-            let userlist = data.users
-            let mystore = {
-                name:data.name,
-                logo:data.logo,
-                id:this.store
+        adminLogin: function(data){
+            //console.log(data);
+            if(sessionStorage.getItem('rand') && data.rand != sessionStorage.getItem('rand')){
+              console.log(data.rand+'---其他端口刷新了页面---'+sessionStorage.getItem('rand'));
+              return true;
             }
-            
+            sessionStorage.setItem('rand',data.rand);
+            let userlist = data.users
+            let mystore = {name:data.name,logo:data.logo,id:'1'}
             this.initData(userlist,mystore);
             for(var k in userlist){
-                this.$socket.emit('lastMessage', {
-                    from:'store',
-                    store:this.store,
-                    userid:userlist[k].from
-                })
-                this.$socket.emit('listMessage', {
-                    store:this.store, 
+                this.$socket.emit('lastGuestMessage', {
+                    from:'admin',
+                    adminid:'1',
                     userid:userlist[k].from,
+                    rand:data.rand
+                })
+                this.$socket.emit('listGuestMessage', {
+                    adminid:'1',
+                    guestid:userlist[k].from,
                     page:1,
-                    from:'store'
+                    from:'admin',
+                    rand:data.rand
                 });
             }
         },
-        userMessage: function(data){
-            console.log(data);
-            var l = data.user;
-            l=l.replace(/user_/g,"");
-            //console.log(l);
-            data.self = false;
-            data.date = new Date(Date.parse(data.time));
-            data.type = 'text';
-            this.getMessage(data);
-            this.$socket.emit('lastMessage', {
-                from:'store',
-                store:this.store,
-                userid:'user_'+l
-            })
-        },
-        lastMessage: function(data){
-            console.log(data);
+        lastGuestMessage: function(data){
+            if(data.rand != sessionStorage.getItem('rand')){
+              console.log('---其他端口刷新了页面---');
+              return true;
+            }
             data.time = new Date(Date.parse(data.time));
             data.storeid = data.store;
             this.setUser(data);
         },
-        listMessage: function(data){
+        listGuestMessage: function(data){
+            if(data.rand != sessionStorage.getItem('rand')){
+              console.log('---其他端口刷新了页面---');
+              return true;
+            }
             //console.log(data);
             let messagelist = data.result;
             let msg = new Object;
-            for(var i=messagelist.length-1;i>=0;i--){  
+            for(var i=messagelist.length-1;i>=0;i--){
                 var json = JSON.parse(messagelist[i]);
                 msg.content = json.content;
-                msg.user = data.user;
+                msg.user = data.guest;
                 msg.date = new Date(Date.parse(json.time));
-                msg.self = json.type == 'user' ? false : true;
-                msg.type = 'text';
+                msg.self = json.type == 'guest' ? false : true;
+                if(json.file == 'pic'){
+                  msg.type = 'img';
+                }else if(json.file == 'pro'){
+                  msg.type = 'pro';
+                }else{
+                  msg.type = 'text';
+                }
                 this.getMessage(msg);
             }
         },
-        userFile: function(data){
-            data.self = false;
-            data.date = new Date(Date.parse(data.time));
-            data.user = data.userid;
-            data.type = 'img';
-            this.getMessage(data);
-        },
-        storeFile: function(data){
+        adminFile: function(data){
             console.log(data);
         }
     }
 }
 </script>
-
 <template>
 <div id="app" v-if="loginStatus">
     <div class="sidebar">
@@ -128,21 +113,15 @@ export default {
     <login></login>
 </div>
 </template>
-
 <style lang="less" scoped>
 #app {
-    
     margin: 0px auto;
     width: 1000px;
     height: 80%;
     min-height: 600px;
     padding-top: 100px;
-    
-    
-
     overflow: hidden;
     border-radius: 3px;
-
     .sidebar, .main {
         height: 100%;
     }

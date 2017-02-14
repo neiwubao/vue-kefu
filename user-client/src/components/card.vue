@@ -20,10 +20,10 @@ export default {
     <header>
         <img class="avatar" width="40" height="40" :alt="user.name" :src="user.img">
         <p class="name">{{user.name}}</p>
-        <i class="glyphicon glyphicon-log-in"></i>
+        <a class="glyphicon glyphicon-home" href="http://www.ydc0755.com" target="_blank"></a>
     </header>
     <footer>
-        <input class="search" type="text" placeholder="搜索..." @keyup="onKeyup | debounce 150">
+        <input class="search" type="text" placeholder="搜索商品..." @keyup="onKeyup | debounce 150">
     </footer>
 </div>
 </template>
@@ -36,7 +36,7 @@ export default {
         margin-top: 10px;
     }
     .glyphicon{
-        float:right;line-height: 33px;
+        float:right;line-height: 33px;color:#fff;
     }
     .avatar, .name {
         vertical-align: middle;

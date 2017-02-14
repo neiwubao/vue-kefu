@@ -5,7 +5,7 @@ export default {
     vuex: {
         actions: actions,
         getters: {
-            currentId: ({ currentSessionId }) => currentSessionId,
+            currentId: ({ currentAdminId }) => currentAdminId,
             userId: ({ userSessionId }) => userSessionId
         }
     },
@@ -19,16 +19,22 @@ export default {
         onKeyup (e) {
             if (e.ctrlKey && e.keyCode === 13 && this.content.length) {
                 this.sendMessage(this.content,1);
+                this.$socket.emit('guestMessage', {
+                    userid:'user_'+this.userId,
+                    content:this.content,
+                    store:this.currentId
+                });
                 this.content = '';
+                console.log('---执行了程序---');
             }
         },
         send () {
             if(this.content){
                 this.sendMessage(this.content,1);
-                this.$socket.emit('userMessage', {
-                    userid:'user_'+this.userId,
+                this.$socket.emit('guestMessage', {
+                    guestid:'user_'+this.userId,
                     content:this.content,
-                    store:this.currentId
+                    adminid:this.currentId
                 });
                 this.content = '';
             }else{
@@ -47,10 +53,10 @@ export default {
                 reader.onloadend = function (e) {
                     newthis.sendMessage(reader.result,'img');
                     document.getElementById('file').value = '';
-                    newthis.$socket.emit('userFile', {
-                        userid:'user_'+this.userId,
+                    newthis.$socket.emit('guestFile', {
+                        guestid:'user_'+newthis.userId,
                         content:reader.result,
-                        store:newthis.currentId,
+                        adminid:newthis.currentId,
                         type:'img'
                     });
                 }
