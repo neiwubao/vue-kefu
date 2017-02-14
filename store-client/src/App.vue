@@ -30,17 +30,17 @@ export default {
         }else{
             console.log('请先登录');
         }
-        function uncompileStr(code){        
-         code=unescape(code);        
-         var c=String.fromCharCode(code.charCodeAt(0)-code.length);        
-         for(var i=1;i<code.length;i++)  
-         {        
-          c+=String.fromCharCode(code.charCodeAt(i)-c.charCodeAt(i-1));        
-         }        
-         return c;   } 
+        function uncompileStr(code){
+         code=unescape(code);
+         var c=String.fromCharCode(code.charCodeAt(0)-code.length);
+         for(var i=1;i<code.length;i++)
+         {
+          c+=String.fromCharCode(code.charCodeAt(i)-c.charCodeAt(i-1));
+         }
+         return c;   }
     },
     sockets:{
-        storeLogin: function(data){ 
+        storeLogin: function(data){
             console.log('执行了登录操作1');
             let userlist = data.users
             let mystore = {
@@ -48,7 +48,7 @@ export default {
                 logo:data.logo,
                 id:this.store
             }
-            
+
             this.initData(userlist,mystore);
             for(var k in userlist){
                 this.$socket.emit('lastMessage', {
@@ -57,7 +57,7 @@ export default {
                     userid:userlist[k].from
                 })
                 this.$socket.emit('listMessage', {
-                    store:this.store, 
+                    store:this.store,
                     userid:userlist[k].from,
                     page:1,
                     from:'store'
@@ -89,7 +89,7 @@ export default {
             //console.log(data);
             let messagelist = data.result;
             let msg = new Object;
-            for(var i=messagelist.length-1;i>=0;i--){  
+            for(var i=messagelist.length-1;i>=0;i--){
                 var json = JSON.parse(messagelist[i]);
                 msg.content = json.content;
                 msg.user = data.user;
@@ -131,14 +131,14 @@ export default {
 
 <style lang="less" scoped>
 #app {
-    
+
     margin: 0px auto;
     width: 1000px;
     height: 80%;
     min-height: 600px;
     padding-top: 100px;
-    
-    
+
+
 
     overflow: hidden;
     border-radius: 3px;
