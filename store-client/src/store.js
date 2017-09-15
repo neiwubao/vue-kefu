@@ -30,19 +30,7 @@ const store = new Vuex.Store({
         SET_LOGIN (state,ru_id) {
             console.log(ru_id);
             state.storeSessionId = ru_id;
-<<<<<<< HEAD
             sessionStorage.setItem('storeSessionId',ru_id);
-=======
-            sessionStorage.setItem('storeSessionId',compileStr(ru_id));
-
-            function compileStr(code){ //对字符串进行加密
-            var c=String.fromCharCode(code.charCodeAt(0)+code.length);
-            for(var i=1;i<code.length;i++)
-            {
-              c+=String.fromCharCode(code.charCodeAt(i)+code.charCodeAt(i-1));
-            }
-             return escape(c);   }
->>>>>>> 5ef06c9b6efad47c2084880be7b5450e0f58e925
         },
         INIT_DATA (state,userlist,mystore) {
             state.loginIf = true;
@@ -104,7 +92,6 @@ const store = new Vuex.Store({
                         date: message.date,
                         self: message.self
                     });
-<<<<<<< HEAD
                 }else if(message.type == 'pro'){
                     session.messages.push({
                         id: message.content.id,
@@ -114,8 +101,6 @@ const store = new Vuex.Store({
                         date: message.date,
                         self: message.self
                     });
-=======
->>>>>>> 5ef06c9b6efad47c2084880be7b5450e0f58e925
                 }else{
                     session.messages.push({
                         content: message.content,
