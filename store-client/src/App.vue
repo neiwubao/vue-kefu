@@ -115,6 +115,7 @@ export default {
 </template>
 <style lang="less" scoped>
 #app {
+
     margin: 0px auto;
     width: 1000px;
     height: 80%;
